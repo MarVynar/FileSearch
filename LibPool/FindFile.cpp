@@ -3,7 +3,7 @@
 #include <map>
 #include <functional>
 
-
+#include "Params.h"
 
 mutex mtx;
 //std::atomic<bool> result (false);
@@ -13,9 +13,17 @@ bool result = false;
 //map <thread::id , bool> finishedFuncs ;///
 //map <int , bool > finishedFuncs ;
 
+bool checkDr(const char*   directoryToCheck, const string fileName){
 
+	for (int i =0; i<100; i++){
+		
+		cout<<"Func1 "<<i<<endl;
+	}
+	return true;
+}
 bool checkDir(const char*   directoryToCheck, const string fileName){
 	
+	cout<<"Inside\n";
 	if(result) {
 		
 		//finishedFuncs[this_thread::get_id()] = true;
@@ -28,17 +36,18 @@ bool checkDir(const char*   directoryToCheck, const string fileName){
 	
 	
     dir = opendir(directoryToCheck);
-
+	
+	cout<<"Before Job Cycle\n";
     while ((ent=readdir(dir)) != nullptr) {
     	
-    	
+    	cout<<"Job Cycle\n";
     	if ( (ent->d_name[0] =='$' ) ||  (ent->d_name[0] == '.' )  ) continue;
     	if(result) {
     	//	finishedFuncs[this_thread::get_id()] = true;
 			return false;
       	}
   
-       	
+       	cout<<"Name: "<<ent->d_name<<endl;
         if (ent->d_name == fileName) {
 
         	closedir(dir);
@@ -127,11 +136,12 @@ bool findFile(string fileName) {
 						strcat(path, ent->d_name);
 
 				
-						function<bool(const char* , const string)> tempfunc= checkDir;   
+					//	function<bool(const char* , const string)> tempfunc= checkDir;   
+						function<bool(const char* , const string)> tempfunc= checkDr;   
 					
-						tempfunc(path, fileName);
+					//	tempfunc(path, fileName);
 					//	pool.QueueJob(tempfunc( path, fileName));////
-				//	pool.QueueJob(tempfunc, path, fileName);
+					pool.QueueJob(Params(tempfunc, path, fileName));
 				
 				 
 

@@ -9,6 +9,8 @@
 #include <queue>
 #include <functional>
 
+#include "Params.h"
+
 
 using namespace std;
 
@@ -19,7 +21,8 @@ public:
     void Start();
    // void QueueJob(const function<void()>& job);
    // void QueueJob(function<void()>& job);
-    void QueueJob(function<bool(char* , const string)>& job);
+   // void QueueJob(function<bool(char* , const string)>& job);
+    void QueueJob(Params job);
    // void QueueJob(void (*job)());
     void Stop();
     bool busy();
@@ -30,8 +33,10 @@ private:
     bool should_terminate = false;          
     mutex mtx;                  
     condition_variable mutex_condition; 
+    condition_variable isFound;
     vector<thread> threads;
-    queue<function<bool(char* , const string)> > jobs;
+    //queue<function<bool(char* , const string)> > jobs;
+    queue<Params> jobs;
 };
 
 

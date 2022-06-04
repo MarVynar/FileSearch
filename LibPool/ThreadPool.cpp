@@ -10,7 +10,7 @@ ThreadPool:: ThreadPool(){
 
 void ThreadPool::Start() {
 	
-    const int num_threads = 3; 
+    const int num_threads = 8; 
     threads.resize(num_threads);
     for (int i = 0; i < num_threads; i++) {
       
@@ -29,6 +29,8 @@ void ThreadPool::ThreadLoop() {
     	
     //	cout<<"EnteringLoop\n";
        function<bool(char* , const string)> job;
+       char*   directoryToCheck;
+	   string fileName;
         {
             std::unique_lock<std::mutex> lock(mtx);
             mutex_condition.wait(lock, [this] {
@@ -38,23 +40,30 @@ void ThreadPool::ThreadLoop() {
                 return;
             }
          //   cout<<"Jobs\n";
-            job = jobs.front();
-         //   cout<<"Jobs added\n";
+            job = jobs.front().func;
+            directoryToCheck= jobs.front().directoryToCheck;
+            string fileName = jobs.front().fileName;
+           cout<<"Jobs added: "<< directoryToCheck <<"- "<< fileName<<endl;
             jobs.pop();
          //   cout<<"Jobs removed\n";
         }
-      //  cout<<"After\n";
-        job("C:/", "11.txt");
+        cout<<"After\n";
+     //   job("C:/", "11.txt"); 
+      if(job( directoryToCheck, fileName)){
+      	
+      	isFound.notify_all();
+      	should_terminate = true;
+	  } 
     }
-   // cout<<"After Loop\n";
+    cout<<"After Loop\n";
 }
 
 
 //void ThreadPool::QueueJob(const std::function<void()>& job) {
 //void ThreadPool::QueueJob( std::function<void()>& job) {
 //void ThreadPool::QueueJob(void (*job)()){
-void ThreadPool::QueueJob(function<bool(char* , const string)>& job){
-
+//void ThreadPool::QueueJob(function<bool(char* , const string)>& job){
+void ThreadPool::QueueJob(Params job){
     {
         std::unique_lock<std::mutex> lock(mtx);
         jobs.push(job);
@@ -63,6 +72,7 @@ void ThreadPool::QueueJob(function<bool(char* , const string)>& job){
        // jobs.push(tmpJob);
     }
     mutex_condition.notify_one();
+    cout<<"Queued \n";
 }
 
 
