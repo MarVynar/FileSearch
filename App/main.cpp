@@ -48,7 +48,7 @@ string getFileName(){
 
 int main() 
 {
-	//	FileFinder *fileFinder = new FileFinder();
+
 
 		while (true){
 			
@@ -63,7 +63,7 @@ int main()
 
 			if(toupper(ch)== 'N') break;
 		}
-//	delete 	fileFinder;	
+
  return 0;
 
 }

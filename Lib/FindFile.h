@@ -28,7 +28,9 @@ using namespace std;
 
 //class FileFinder{
 	
-	extern	bool  result; 
+//extern	std::atomic<bool>  result; 
+extern bool result;
+
 //public:
 
 //	bool checkDr();
