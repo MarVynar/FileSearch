@@ -8,25 +8,15 @@
 mutex mtx;
 //std::atomic<bool> result (false);
 bool result = false;
-//std::atomic<vector<int> > finishedFuncs;
-//vector<int> finishedFuncs;
-//map <thread::id , bool> finishedFuncs ;///
-//map <int , bool > finishedFuncs ;
 
-bool checkDr(const char*   directoryToCheck, const string fileName){
 
-	for (int i =0; i<100; i++){
-		
-		cout<<"Func1 "<<i<<endl;
-	}
-	return true;
-}
-bool checkDir(const char*   directoryToCheck, const string fileName){
+
+bool checkDir(const char*   directoryToCheck,  string fileName){
 	
-	cout<<"Inside\n";
+
 	if(result) {
 		
-		//finishedFuncs[this_thread::get_id()] = true;
+	
 		 return false;
 	}
 	
@@ -37,31 +27,31 @@ bool checkDir(const char*   directoryToCheck, const string fileName){
 	
     dir = opendir(directoryToCheck);
 	
-	cout<<"Before Job Cycle\n";
+
     while ((ent=readdir(dir)) != nullptr) {
     	
-    	cout<<"Job Cycle\n";
+   
     	if ( (ent->d_name[0] =='$' ) ||  (ent->d_name[0] == '.' )  ) continue;
     	if(result) {
-    	//	finishedFuncs[this_thread::get_id()] = true;
+    
 			return false;
       	}
   
-       	cout<<"Name: "<<ent->d_name<<endl;
+       
         if (ent->d_name == fileName) {
 
         	closedir(dir);
            	cout<<"FOUND!! In " << directoryToCheck<<endl;
-         //  	mtx.lock();
+           	mtx.lock();
           	result = true;
-         //	mtx.unlock();
-         //	finishedFuncs[this_thread::get_id()] = true;
+         	mtx.unlock();
+    
           	return true;
 		  }
 		  
 		  else {
 		  	if(result) {
-		  ///		finishedFuncs[this_thread::get_id()] = true;
+		  
 			  	return false;
 			}
 		 
@@ -72,7 +62,7 @@ bool checkDir(const char*   directoryToCheck, const string fileName){
 		  	
 		  	if(checkDir(path , fileName)){
 		  	closedir(dir);
-		  //	finishedFuncs[this_thread::get_id()] = true;
+		  
           	return true;
 		  	
 		  }
@@ -82,7 +72,8 @@ bool checkDir(const char*   directoryToCheck, const string fileName){
     }
 
     closedir(dir);
-    //finishedFuncs[this_thread::get_id()] = true;
+  
+    cout<<"Close Dir"<<endl;
 	return false;
 	
 }
@@ -103,31 +94,41 @@ bool findFile(string fileName) {
 	 root = "C:/";	
 	}  
 	else   root = "/";
-	
+
 	result = false;
+
 	struct dirent *ent;
 	 	
 	    dir = opendir(root);
 	   
-	 
+	 	pool.Start();
+	 	
 	    while ((ent=readdir(dir)) != nullptr) {
 	    	
-
+			
 	    	if (ent->d_name[0] =='$' ) continue;
 
 	    	if(result) break;
-
+	    	
+	
+			
 	        if(ent->d_name == fileName){
 	            closedir (dir);	
 	            cout<<"file is found in: " << root <<endl;  
 				result = true;
-				return result; 	
+				
+				pool.Stop();
+ 			
+    			closedir(dir);
+    		
+				return result; 
 				}
 				
 				else {
 					if(result) break;
 					
-						pool.Start();
+					
+						
 						
 						char* path = new char[MAXPATHLENGTH];
 				
@@ -136,11 +137,8 @@ bool findFile(string fileName) {
 						strcat(path, ent->d_name);
 
 				
-					//	function<bool(const char* , const string)> tempfunc= checkDir;   
-						function<bool(const char* , const string)> tempfunc= checkDr;   
-					
-					//	tempfunc(path, fileName);
-					//	pool.QueueJob(tempfunc( path, fileName));////
+						function<bool(const char* , const string)> tempfunc= checkDir;   
+
 					pool.QueueJob(Params(tempfunc, path, fileName));
 				
 				 
@@ -153,11 +151,15 @@ bool findFile(string fileName) {
 					
 
 				}
+				
+
 	    }
  
- 
- 	if (!result) 	cout<<"file is not found"<<endl;   
+ 	cout<<"After MLoop\n";
+ 	pool.Stop();
+ 	cout<<"After pool\n";
     closedir(dir);
-    pool.Stop();
+    if (!result) 	cout<<"file is not found"<<endl;   
+
     return result;
 }

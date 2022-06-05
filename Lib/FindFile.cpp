@@ -1,21 +1,22 @@
 #include "FindFile.h"
+#include "ThreadPool.h"
 #include <map>
+#include <functional>
 
-
+#include "Params.h"
 
 mutex mtx;
 //std::atomic<bool> result (false);
 bool result = false;
-//std::atomic<vector<int> > finishedFuncs;
-//vector<int> finishedFuncs;
-map <thread::id , bool> finishedFuncs ;
-//map <int , bool > finishedFuncs ;
 
-bool checkDir(const char* const  directoryToCheck, const string fileName){
+
+
+bool checkDir(const char*   directoryToCheck,  string fileName){
 	
+
 	if(result) {
 		
-		finishedFuncs[this_thread::get_id()] = true;
+	
 		 return false;
 	}
 	
@@ -25,17 +26,18 @@ bool checkDir(const char* const  directoryToCheck, const string fileName){
 	
 	
     dir = opendir(directoryToCheck);
+	
 
     while ((ent=readdir(dir)) != nullptr) {
     	
-    	
+   
     	if ( (ent->d_name[0] =='$' ) ||  (ent->d_name[0] == '.' )  ) continue;
     	if(result) {
-    		finishedFuncs[this_thread::get_id()] = true;
+    
 			return false;
       	}
   
-       	
+       
         if (ent->d_name == fileName) {
 
         	closedir(dir);
@@ -43,13 +45,13 @@ bool checkDir(const char* const  directoryToCheck, const string fileName){
            	mtx.lock();
           	result = true;
          	mtx.unlock();
-         	finishedFuncs[this_thread::get_id()] = true;
+    
           	return true;
 		  }
 		  
 		  else {
 		  	if(result) {
-		  		finishedFuncs[this_thread::get_id()] = true;
+		  
 			  	return false;
 			}
 		 
@@ -60,7 +62,7 @@ bool checkDir(const char* const  directoryToCheck, const string fileName){
 		  	
 		  	if(checkDir(path , fileName)){
 		  	closedir(dir);
-		  	finishedFuncs[this_thread::get_id()] = true;
+		  
           	return true;
 		  	
 		  }
@@ -70,7 +72,8 @@ bool checkDir(const char* const  directoryToCheck, const string fileName){
     }
 
     closedir(dir);
-    finishedFuncs[this_thread::get_id()] = true;
+  
+    cout<<"Close Dir"<<endl;
 	return false;
 	
 }
@@ -78,7 +81,7 @@ bool checkDir(const char* const  directoryToCheck, const string fileName){
 
 bool findFile(string fileName) {
 	
-
+	ThreadPool pool;
 	
 	DIR *dir; 
 	char *root;
@@ -91,122 +94,72 @@ bool findFile(string fileName) {
 	 root = "C:/";	
 	}  
 	else   root = "/";
-	
+
 	result = false;
+
 	struct dirent *ent;
 	 	
 	    dir = opendir(root);
 	   
-	 
+	 	pool.Start();
+	 	
 	    while ((ent=readdir(dir)) != nullptr) {
 	    	
-
+			
 	    	if (ent->d_name[0] =='$' ) continue;
 
 	    	if(result) break;
-
+	    	
+	
+			
 	        if(ent->d_name == fileName){
 	            closedir (dir);	
 	            cout<<"file is found in: " << root <<endl;  
 				result = true;
-				return result; 	
+				
+				pool.Stop();
+ 			
+    			closedir(dir);
+    		
+				return result; 
 				}
 				
 				else {
 					if(result) break;
-
-						if ( !threads.empty()){
-							
-							for (vector<thread>::iterator it =threads.begin(); it !=threads.end();  ){
-						
-						
-							//	if ( finishedFuncs[it->get_id()] == true) {
-
-							if ( (finishedFuncs.find(it->get_id()))->second == true) {
-								
-									mtx.lock();
-									cout<<"Erasing " <<it->get_id()<<"+ "<< (finishedFuncs.find(it->get_id()))->second<<endl;
-								//	threads.erase(it); ///to paste new process here?
-									cout<<"Erased " <<it->get_id()<<"+ "<< (finishedFuncs.find(it->get_id()))->second<<endl;
-								//	it++; //test
-									mtx.unlock();
-								}
-								else {
-									it++;
-								}
-													
-						
-							}
-							
-							int size = threads.size();
-							
-//							for (int it =0; it <size; it++ ){	
-//						
-//								if ( finishedFuncs[(threads.begin()+it)->get_id()] == true) {
-//								
-//									mtx.lock();
-//									threads.erase(threads.begin()+it);
-//								//	cout<<"Erased " <<(threads.begin()+it)->get_id()<<endl;
-//									mtx.unlock();
-//								}
-//													
-//						
-//							}
-								
-						}
-						
 					
 					
-				/*/if (threads.size() >= maxThreads){
-						
-					
-					/////Not accurate alternative for checking each thread/////
-						for (vector<thread>::iterator it =threads.begin(); it !=threads.end(); it++ ){	
-						
-						it->join();
-						threads.erase(it);
-
-							
-						
-						} 
 						
 						
-						
-					}*/
-				
-					{
 						char* path = new char[MAXPATHLENGTH];
 				
 						strcpy(path, root);
 						strcat(path, "/");
 						strcat(path, ent->d_name);
+
+				
+						function<bool(const char* , const string)> tempfunc= checkDir;   
+
+					pool.QueueJob(Params(tempfunc, path, fileName));
+				
+				 
+
+				
+				
+
+						
 					
-					//	thread tempThread (checkDir, (path), (fileName));
-					//	int curSize= threads.size();
-					//	finishedFuncs.insert(make_pair<curSize, false>);
-					//	finishedFuncs.emplace(curSize, false);
-						threads.push_back(thread (checkDir, (path), (fileName)));
-						//	threads.push_back(tempThread);
-						//const std::thread::id tmpId = threads.back().get_id();
-						finishedFuncs.emplace(threads.back().get_id(), false);
-						
-	
-	
-						if (result)	{
-									
-							for (vector<thread>::iterator it =threads.begin(); it !=threads.end(); it++ ){	(*it).join();	}  
-	  				 		closedir(dir);
-							return result;
-						}
-						
-					}
 					
 
 				}
+				
+
 	    }
  
- 	for (vector<thread>::iterator it =threads.begin(); it !=threads.end(); it++ ){	(*it).join();	}  
- 	if (!result) 	cout<<"file is not found"<<endl;   
+ 	cout<<"After MLoop\n";
+ 	pool.Stop();
+ 	cout<<"After pool\n";
     closedir(dir);
+    if (!result) 	cout<<"file is not found"<<endl;   
+
     return result;
 }

@@ -33,8 +33,8 @@ extern bool result;
 
 //public:
 
-//	bool checkDr();
-	bool checkDir(const char* const  directoryToCheck, const string fileName);
+
+	bool checkDir(const char* directoryToCheck,  string fileName);
 	bool findFile(string fileName);
 	
 //};
