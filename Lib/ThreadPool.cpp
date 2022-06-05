@@ -27,7 +27,7 @@ void ThreadPool::ThreadLoop() {
 
     while (true) {
     	
-  
+
        function<bool(char* , string)> job;
        char*   directoryToCheck;
 	   string fileName;
@@ -39,20 +39,21 @@ void ThreadPool::ThreadLoop() {
             if (should_terminate) {
                 return;
             }
-        
+
             job = jobs.front().func;
             directoryToCheck= jobs.front().directoryToCheck;
            fileName = jobs.front().fileName;
-        
+
             jobs.pop();
-        
+
         }
- 
+
       if(job( directoryToCheck, fileName)){
       	
 
       	{
-
+      		//unique_lock<mutex> lock(mtx); //?
+      		lock_guard<mutex> lk(mtx);
       		should_terminate = true;
 		}
 		mutex_condition.notify_all();
@@ -67,7 +68,8 @@ void ThreadPool::ThreadLoop() {
 
 void ThreadPool::QueueJob(Params job){
     {
-        std::unique_lock<std::mutex> lock(mtx);
+        //std::unique_lock<std::mutex> lock(mtx);
+        lock_guard<mutex> lk(mtx);
         jobs.push(job);
         
 
@@ -92,7 +94,7 @@ bool ThreadPool::busy() {
 
 
 void ThreadPool::Stop() {
-//	cout<<"EnteringStop\n";
+
     {
         //unique_lock<mutex> lock(mtx);
         lock_guard<mutex> lk(mtx);
@@ -100,15 +102,15 @@ void ThreadPool::Stop() {
     }
     mutex_condition.notify_all();
    
-  //  cout<<"Stopping Vecs\n"<< threads.size()<<"!"<<endl;
+
     
     for (vector<thread>::iterator it =threads.begin(); it !=threads.end(); it++ ){	
     
-    	// cout<<"Into Stopping Vecs\n";
+
 	if (it->joinable())	it->join();
 	} 
-//	cout<<"Stopped Vecs\n"; 
+
     threads.clear();
-   // cout<<"Stoped\n";
+
 }
 
