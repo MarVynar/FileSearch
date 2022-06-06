@@ -18,24 +18,23 @@ class ThreadPool {
 public:
 	
 	ThreadPool();
-    void Start();
-   // void QueueJob(const function<void()>& job);
-   // void QueueJob(function<void()>& job);
-   // void QueueJob(function<bool(char* , const string)>& job);
-    void QueueJob(Params job);
-   // void QueueJob(void (*job)());
-    void Stop();
+    void start();
+
+    void queueJob(Params job);
+
+    void stop();
+    void terminate();
     bool busy();
 
 private:
-    void ThreadLoop();
+    void threadLoop();
 
     bool should_terminate = false;          
     mutex mtx;                  
     condition_variable mutex_condition; 
-   // condition_variable isFound;
+
     vector<thread> threads;
-    //queue<function<bool(char* , const string)> > jobs;
+ 
     queue<Params> jobs;
 };
 

@@ -4,17 +4,17 @@
 
 ThreadPool:: ThreadPool(){
 	
-	//Start();
+
 }
 
 
-void ThreadPool::Start() {
+void ThreadPool::start() {
 	
     const int num_threads = 8; 
     threads.resize(num_threads);
     for (int i = 0; i < num_threads; i++) {
       
-        threads.push_back(thread(ThreadLoop, this)); //
+        threads.push_back(thread(threadLoop, this)); //
     }
 }
 
@@ -22,12 +22,12 @@ void ThreadPool::Start() {
 
 
 
-void ThreadPool::ThreadLoop() {
+void ThreadPool::threadLoop() {
 	
 
     while (true) {
     	
-
+  
        function<bool(char* , string)> job;
        char*   directoryToCheck;
 	   string fileName;
@@ -37,24 +37,25 @@ void ThreadPool::ThreadLoop() {
                 return !jobs.empty() || should_terminate;
             });
             if (should_terminate) {
+            
                 return;
             }
-
+         
             job = jobs.front().func;
             directoryToCheck= jobs.front().directoryToCheck;
            fileName = jobs.front().fileName;
-
+    
             jobs.pop();
-
+         
         }
 
       if(job( directoryToCheck, fileName)){
       	
 
       	{
-      		//unique_lock<mutex> lock(mtx); //?
+      
       		lock_guard<mutex> lk(mtx);
-      		should_terminate = true;
+      		should_terminate = true; 
 		}
 		mutex_condition.notify_all();
       	
@@ -64,11 +65,9 @@ void ThreadPool::ThreadLoop() {
 
 }
 
-
-
-void ThreadPool::QueueJob(Params job){
+void ThreadPool::queueJob(Params job){
     {
-        //std::unique_lock<std::mutex> lock(mtx);
+
         lock_guard<mutex> lk(mtx);
         jobs.push(job);
         
@@ -85,24 +84,45 @@ void ThreadPool::QueueJob(Params job){
 bool ThreadPool::busy() {
     bool poolbusy= false;
     {
-        //std::unique_lock<std::mutex> lock(mtx);
+ 
         lock_guard<mutex> lk(mtx);
-        poolbusy = jobs.empty();
+        poolbusy = !jobs.empty();
     }
     return poolbusy;
 }
 
 
-void ThreadPool::Stop() {
+void ThreadPool::stop() {
 
     {
-        //unique_lock<mutex> lock(mtx);
+      
         lock_guard<mutex> lk(mtx);
-        should_terminate = true;
+        //should_terminate = true; ///?
     }
     mutex_condition.notify_all();
    
 
+    
+    for (vector<thread>::iterator it =threads.begin(); it !=threads.end(); it++ ){	
+    
+    	
+	if (it->joinable())	it->join();
+	} 
+
+    threads.clear();
+ 
+}
+
+
+void ThreadPool::terminate() {
+	cout<<"EnteringStop\n";
+    {
+        //unique_lock<mutex> lock(mtx);
+        lock_guard<mutex> lk(mtx);
+        should_terminate = true; 
+    }
+    mutex_condition.notify_all();
+   
     
     for (vector<thread>::iterator it =threads.begin(); it !=threads.end(); it++ ){	
     
@@ -113,4 +133,3 @@ void ThreadPool::Stop() {
     threads.clear();
 
 }
-

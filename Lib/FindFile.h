@@ -26,18 +26,11 @@
 
 using namespace std;
 
-//class FileFinder{
-	
-//extern	std::atomic<bool>  result; 
-extern bool result;
-
-//public:
-
 
 	bool checkDir(const char* directoryToCheck,  string fileName);
 	bool findFile(string fileName);
 	
-//};
+
 
 
 
