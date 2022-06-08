@@ -1,7 +1,11 @@
 #ifndef THREADPOOL_H
 #define THREADPOOL_H
 
+<<<<<<< Updated upstream
 #define _WIN32_WINNT 0x0501
+=======
+//#define _WIN32_WINNT 0x0501
+>>>>>>> Stashed changes
 
 //#include <thread> //Usual Compiler
 #include "mingw.thread.h" //MingW
