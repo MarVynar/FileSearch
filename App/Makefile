@@ -1,10 +1,4 @@
+all: FileSearch.exe
 
-
-all: FileSearchApp.exe
-
-FileSearchApp.exe: main.o FileSearchLib.a
-	g++ -o FileSearchApp.exe main.o -L -lFileSearchLib.a
-
-main.o: main.cpp FindFile.h
-	g++ -c  main.cpp
-
+FileSearch.exe: main.cpp FindFile.h libFileSearch.a
+	 g++ -I ../inc -L . -static main.cpp -lFileSearch -static
