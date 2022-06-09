@@ -1,5 +1,7 @@
 #include "Params.h"
 
+#include <cstring>
+
 Params::Params(	function<bool(char* , const string)> func, char* dirToCheck , string fileName ){
 
 	this->func = func;

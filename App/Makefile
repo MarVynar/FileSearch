@@ -1,11 +1,4 @@
-LDFLAGS= /lib
-LDLIBS = FileSearchLib.a
+all: FileSearch.exe
 
-all: FileSearchApp.exe
-
-FileSearchApp.exe: main.o 
-	g++ -o FileSearchApp.exe main.o 
-
-main.o: main.cpp FindFile.h
-	g++ -c  main.cpp
-
+FileSearch.exe: main.cpp FindFile.h libFileSearch.a
+	 g++ -I ../inc -L . -static main.cpp -lFileSearch -static

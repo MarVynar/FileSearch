@@ -33,7 +33,7 @@ private:
     mutex mtx;                  
     condition_variable mutex_condition; 
 
-    vector<thread> threads;
+    vector<std::thread> threads;
  
     queue<Params> jobs;
 };

@@ -1,11 +1,20 @@
 #ifndef THREADPOOL_H
 #define THREADPOOL_H
 
-#include <thread>
+<<<<<<< Updated upstream
+#define _WIN32_WINNT 0x0501
+=======
+//#define _WIN32_WINNT 0x0501
+>>>>>>> Stashed changes
+
+//#include <thread> //Usual Compiler
+#include "mingw.thread.h" //MingW
 #include <forward_list>
 #include <vector>
-#include <mutex>
-#include <condition_variable>
+//#include <mutex>//Usual Compiler
+//#include <condition_variable>//Usual Compiler
+#include "mingw.mutex.h" //MingW
+#include "mingw.condition_variable.h" //MingW
 #include <queue>
 #include <functional>
 
